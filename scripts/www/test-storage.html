@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试本地存储功能</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-2px);
+        }
+        .card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .neon-border {
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">本地存储功能测试</h1>
+        
+        <div class="card neon-border">
+            <h2 class="text-xl font-semibold mb-4 text-blue-300">测试步骤：</h2>
+            <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                <li>在主页面 (index.html) 中添加新硬件或自定义配件</li>
+                <li>关闭浏览器标签页</li>
+                <li>重新打开 index.html</li>
+                <li>检查数据是否正确保存</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4 text-blue-300">当前存储数据：</h2>
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-medium text-blue-200">修改过的硬件：</h3>
+                    <pre id="modified-hardware" class="bg-gray-800 p-3 rounded text-sm overflow-x-auto">加载中...</pre>
+                </div>
+                <div>
+                    <h3 class="font-medium text-blue-200">自定义配件：</h3>
+                    <pre id="custom-accessories" class="bg-gray-800 p-3 rounded text-sm overflow-x-auto">加载中...</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-center space-x-4 mt-6">
+            <button class="btn" onclick="loadStorageData()">
+                <i data-lucide="refresh-cw" class="inline-block w-4 h-4 mr-2"></i>
+                刷新数据
+            </button>
+            <button class="btn" onclick="clearAllStorage()">
+                <i data-lucide="trash-2" class="inline-block w-4 h-4 mr-2"></i>
+                清空存储
+            </button>
+            <a href="index.html" class="btn">
+                <i data-lucide="home" class="inline-block w-4 h-4 mr-2"></i>
+                返回主页面
+            </a>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function loadStorageData() {
+            // 加载修改过的硬件
+            const modifiedHardware = localStorage.getItem('modifiedHardware');
+            document.getElementById('modified-hardware').textContent = 
+                modifiedHardware ? JSON.stringify(JSON.parse(modifiedHardware), null, 2) : '无数据';
+
+            // 加载自定义配件
+            const customAccessories = localStorage.getItem('customAccessories');
+            document.getElementById('custom-accessories').textContent = 
+                customAccessories ? JSON.stringify(JSON.parse(customAccessories), null, 2) : '无数据';
+        }
+
+        function clearAllStorage() {
+            if (confirm('确定要清空所有本地存储数据吗？此操作不可撤销。')) {
+                localStorage.removeItem('modifiedHardware');
+                localStorage.removeItem('customAccessories');
+                loadStorageData();
+                alert('存储数据已清空！');
+            }
+        }
+
+        // 页面加载时自动加载数据
+        document.addEventListener('DOMContentLoaded', loadStorageData);
+    </script>
+</body>
+</html>
