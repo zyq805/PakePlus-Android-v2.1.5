@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIY装机助手 - 修复版本</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #8B5CF6;
+            --primary-dark: #7C3AED;
+            --secondary: #EC4899;
+            --background: #0F172A;
+            --surface: #1E293B;
+            --surface-hover: #334155;
+            --text: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --border: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--background) 0%, #1E293B 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+        }
+
+        .input-field {
+            background: #0F172A;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .suggestions-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-top: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .suggestion-item:hover {
+            background: var(--surface-hover);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            color: var(--primary);
+        }
+
+        .component-item {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .component-item:hover {
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .floating-total {
+            position: sticky;
+            top: 20px;
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(30, 41, 59, 0.9) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-4">
+                DIY装机助手
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                自定义您的电脑配置，实时计算价格，打造属于您的理想主机
+            </p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Components Area -->
+            <div class="lg:col-span-3 space-y-8">
+                <!-- CPU Category -->
+                <div class="card p-6">
+                    <div class="category-header">
+                        <i data-lucide="cpu" class="category-icon"></i>
+                        <h2 class="text-2xl font-bold">CPU</h2>
+                    </div>
+                    <div class="mb-4 relative">
+                        <input type="text" id="cpu-search" class="input-field" placeholder="搜索CPU型号...">
+                        <div id="cpu-suggestions" class="suggestions-container"></div>
+                    </div>
+                    <div id="cpu-list" class="space-y-3"></div>
+                </div>
+
+                <!-- Motherboard Category -->
+                <div class="card p-6">
+                    <div class="category-header">
+                        <i data-lucide="layers" class="category-icon"></i>
+                        <h2 class="text-2xl font-bold">主板</h2>
+                    </div>
+                    <div class="mb-4 relative">
+                        <input type="text" id="motherboard-search" class="input-field" placeholder="搜索主板型号...">
+                        <div id="motherboard-suggestions" class="suggestions-container"></div>
+                    </div>
+                    <div id="motherboard-list" class="space-y-3"></div>
+                </div>
+
+                <!-- RAM Category -->
+                <div class="card p-6">
+                    <div class="category-header">
+                        <i data-lucide="memory-stick" class="category-icon"></i>
+                        <h2 class="text-2xl font-bold">内存</h2>
+                    </div>
+                    <div class="mb-4 relative">
+                        <input type="text" id="ram-search" class="input-field" placeholder="搜索内存型号...">
+                        <div id="ram-suggestions" class="suggestions-container"></div>
+                    </div>
+                    <div id="ram-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="floating-total">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">总价格</h3>
+                        <div class="text-4xl font-bold text-purple-400" id="total-price">¥0</div>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <button id="save-config" class="btn-primary w-full flex items-center justify-center">
+                            <i data-lucide="save" class="mr-2 h-5 w-5"></i>
+                            保存配置
+                        </button>
+                        <button id="clear-all" class="btn-secondary w-full flex items-center justify-center">
+                            <i data-lucide="trash-2" class="mr-2 h-5 w-5"></i>
+                            清空配置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold" id="modal-title">添加自定义配件</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            <form id="custom-form">
+                <input type="hidden" id="modal-category">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">产品名称</label>
+                        <input type="text" id="custom-name" class="input-field" placeholder="输入产品名称" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">价格 (元)</label>
+                        <input type="number" id="custom-price" class="input-field" placeholder="输入价格" required min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-3">
+                    <button type="button" id="cancel-custom" class="btn-secondary flex-1">取消</button>
+                    <button type="submit" class="btn-primary flex-1">添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 硬件数据库
+        const hardwareData = {
+            cpu: [
+                { name: 'AMD Ryzen 9 9950X3D', price: 4999 },
+                { name: 'AMD Ryzen 9 9950X', price: 3999 },
+                { name: 'Intel 酷睿 Ultra 9 285K', price: 3499 },
+                { name: 'Intel 酷睿 i9 14900K', price: 3449 }
+            ],
+            motherboard: [
+                { name: '微星 MPG B850I EDGE WIFI', price: 2099 },
+                { name: '微星 MAG B850 TOMAHAWK WIFI', price: 1799 },
+                { name: '技嘉 B850I AORUS ULTRA', price: 1999 },
+                { name: '技嘉 B850 AORUS ELITE AX', price: 1699 },
+                { name: '华硕 ROG STRIX B850E-E GAMING WIFI', price: 2299 },
+                { name: '华硕 TUF GAMING B850M-PLUS WIFI', price: 1499 },
+                { name: '精粤 B850I PRO', price: 999 }
+            ],
+            ram: [
+                { name: '光威天策 DDR5-6400 32GB(16G×2)', price: 1039 },
+                { name: '海盗船 DDR5 32GB (2x16GB) 6400MHz', price: 1899 }
+            ]
+        };
+
+        // 当前配置
+        let currentConfig = {
+            cpu: [],
+            motherboard: [],
+            ram: []
+        };
+
+        // 当前选中的配件类型
+        let currentPartType = '';
+
+        // 初始化
+        function init() {
+            setupSearchListeners();
+            setupModalListeners();
+            updateTotalPrice();
+        }
+
+        // 设置搜索监听器
+        function setupSearchListeners() {
+            const partTypes = ['cpu', 'motherboard', 'ram'];
+            
+            partTypes.forEach(type => {
+                const searchInput = document.getElementById(`${type}-search`);
+                const suggestionsContainer = document.getElementById(`${type}-suggestions`);
+                
+                if (searchInput && suggestionsContainer) {
+                    searchInput.addEventListener('input', (e) => {
+                        showSuggestions(type, e.target.value);
+                    });
+                    
+                    searchInput.addEventListener('focus', (e) => {
+                        if (e.target.value.trim()) {
+                            showSuggestions(type, e.target.value);
+                        }
+                    });
+                    
+                    searchInput.addEventListener('blur', () => {
+                        setTimeout(() => {
+                            suggestionsContainer.style.display = 'none';
+                        }, 200);
+                    });
+                }
+            });
+        }
+
+        // 设置模态框监听器
+        function setupModalListeners() {
+            // 关闭模态框
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            document.getElementById('cancel-custom').addEventListener('click', closeModal);
+            
+            // 自定义表单提交
+            document.getElementById('custom-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                addCustomPart();
+            });
+            
+            // 清空配置
+            document.getElementById('clear-all').addEventListener('click', clearAll);
+            
+            // 保存配置
+            document.getElementById('save-config').addEventListener('click', saveConfig);
+        }
+
+        // 显示搜索建议
+        function showSuggestions(type, input) {
+            const suggestionsContainer = document.getElementById(`${type}-suggestions`);
+            const data = hardwareData[type] || [];
+            
+            suggestionsContainer.innerHTML = '';
+            
+            // 添加自定义选项
+            const customOption = document.createElement('div');
+            customOption.className = 'suggestion-item border-b border-gray-600';
+            customOption.textContent = '添加自定义型号';
+            customOption.onclick = () => {
+                showCustomModal(type);
+                suggestionsContainer.style.display = 'none';
+            };
+            suggestionsContainer.appendChild(customOption);
+            
+            // 过滤匹配的配件
+            const filteredData = data.filter(item => 
+                item.name.toLowerCase().includes(input.toLowerCase())
+            );
+            
+            // 添加搜索结果
+            filteredData.forEach(item => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'suggestion-item';
+                suggestionItem.innerHTML = `
+                    <div class="font-medium">${item.name}</div>
+                    <div class="text-sm text-gray-400">${item.price}元</div>
+                `;
+                suggestionItem.onclick = () => {
+                    addPart(type, item);
+                    suggestionsContainer.style.display = 'none';
+                    document.getElementById(`${type}-search`).value = '';
+                };
+                suggestionsContainer.appendChild(suggestionItem);
+            });
+            
+            // 如果没有匹配结果，显示提示
+            if (filteredData.length === 0 && type !== 'custom') {
+                const noResults = document.createElement('div');
+                noResults.className = 'suggestion-item text-center text-gray-400';
+                noResults.textContent = '未找到匹配的型号';
+                suggestionsContainer.appendChild(noResults);
+            }
+            
+            suggestionsContainer.style.display = 'block';
+        }
+
+        // 显示自定义模态框
+        function showCustomModal(type) {
+            currentPartType = type;
+            document.getElementById('modal-category').value = type;
+            document.getElementById('modal-title').textContent = `添加自定义${getPartTypeName(type)}`;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+            document.getElementById('custom-form').reset();
+        }
+
+        // 添加自定义配件
+        function addCustomPart() {
+            const type = document.getElementById('modal-category').value;
+            const name = document.getElementById('custom-name').value.trim();
+            const price = parseFloat(document.getElementById('custom-price').value);
+            
+            if (name && price >= 0) {
+                const part = { name, price };
+                addPart(type, part);
+                closeModal();
+            }
+        }
+
+        // 添加配件到配置
+        function addPart(type, part) {
+            // 检查是否已经添加了该类型的配件
+            if (currentConfig[type].length > 0) {
+                alert('该类别已经添加了配件，请先移除现有配件');
+                return;
+            }
+            
+            currentConfig[type].push({
+                id: Date.now().toString(),
+                name: part.name,
+                price: part.price
+            });
+            
+            renderParts();
+            updateTotalPrice();
+            saveToLocalStorage();
+        }
+
+        // 渲染配件列表
+        function renderParts() {
+            Object.keys(currentConfig).forEach(type => {
+                const container = document.getElementById(`${type}-list`);
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                if (currentConfig[type].length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-gray-400 py-8">
+                            <p>请在上方搜索框中输入${getPartTypeName(type)}型号</p>
+                        </div>
+                    `;
+                } else {
+                    currentConfig[type].forEach(part => {
+                        const partElement = document.createElement('div');
+                        partElement.className = 'component-item';
+                        partElement.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-semibold">${part.name}</h4>
+                                    <p class="text-green-400 font-bold">¥${part.price}</p>
+                                </div>
+                                <button onclick="removePart('${type}', '${part.id}')" 
+                                        class="text-red-400 hover:text-red-300">
+                                    <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(partElement);
+                    });
+                }
+            });
+            
+            lucide.createIcons();
+        }
+
+        // 移除配件
+        function removePart(type, id) {
+            currentConfig[type] = currentConfig[type].filter(part => part.id !== id);
+            renderParts();
+            updateTotalPrice();
+            saveToLocalStorage();
+        }
+
+        // 更新总价格
+        function updateTotalPrice() {
+            let total = 0;
+            Object.values(currentConfig).forEach(parts => {
+                parts.forEach(part => {
+                    total += part.price;
+                });
+            });
+            document.getElementById('total-price').textContent = `¥${total.toLocaleString()}`;
+        }
+
+        // 清空配置
+        function clearAll() {
+            if (confirm('确定要清空所有配置吗？')) {
+                currentConfig = {
+                    cpu: [],
+                    motherboard: [],
+                    ram: []
+                };
+                renderParts();
+                updateTotalPrice();
+                localStorage.removeItem('pcConfig');
+            }
+        }
+
+        // 保存配置
+        function saveConfig() {
+            saveToLocalStorage();
+            alert('配置保存成功！');
+        }
+
+        // 保存到本地存储
+        function saveToLocalStorage() {
+            localStorage.setItem('pcConfig', JSON.stringify(currentConfig));
+        }
+
+        // 从本地存储加载
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('pcConfig');
+            if (saved) {
+                currentConfig = JSON.parse(saved);
+                renderParts();
+                updateTotalPrice();
+            }
+        }
+
+        // 获取配件类型名称
+        function getPartTypeName(type) {
+            const names = {
+                cpu: 'CPU',
+                motherboard: '主板',
+                ram: '内存'
+            };
+            return names[type] || type;
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            loadFromLocalStorage();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
