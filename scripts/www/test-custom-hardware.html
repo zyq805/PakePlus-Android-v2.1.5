@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试自定义配件功能</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-2px);
+        }
+        .card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .neon-border {
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">自定义配件功能测试</h1>
+        
+        <div class="card neon-border">
+            <h2 class="text-xl font-semibold mb-4 text-blue-300">快速测试：</h2>
+            <div class="flex flex-wrap gap-4">
+                <button class="btn" onclick="testAddCustomHardware()">
+                    <i data-lucide="plus" class="inline-block w-4 h-4 mr-2"></i>
+                    添加测试配件
+                </button>
+                <button class="btn" onclick="loadCustomHardwareData()">
+                    <i data-lucide="refresh-cw" class="inline-block w-4 h-4 mr-2"></i>
+                    刷新数据
+                </button>
+                <button class="btn" onclick="clearCustomHardware()">
+                    <i data-lucide="trash-2" class="inline-block w-4 h-4 mr-2"></i>
+                    清空数据
+                </button>
+                <a href="index.html" class="btn">
+                    <i data-lucide="home" class="inline-block w-4 h-4 mr-2"></i>
+                    返回主页面
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4 text-blue-300">当前自定义配件数据库：</h2>
+            <div id="hardware-data" class="bg-gray-800 p-4 rounded text-sm overflow-x-auto">
+                加载中...
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4 text-blue-300">直接添加配件：</h2>
+            <form id="test-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">名称</label>
+                        <input type="text" id="test-name" value="测试配件" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">价格</label>
+                        <input type="number" id="test-price" value="199" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">规格</label>
+                    <input type="text" id="test-specs" value="测试规格" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                </div>
+                <button type="submit" class="btn">
+                    <i data-lucide="save" class="inline-block w-4 h-4 mr-2"></i>
+                    添加配件
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // 模拟自定义配件数据库
+        let testCustomHardwareData = [];
+
+        // 从localStorage加载数据
+        function loadCustomHardwareData() {
+            const savedData = localStorage.getItem('customHardwareData');
+            if (savedData) {
+                try {
+                    testCustomHardwareData = JSON.parse(savedData);
+                    document.getElementById('hardware-data').textContent = 
+                        JSON.stringify(testCustomHardwareData, null, 2);
+                    console.log('加载的自定义配件数据:', testCustomHardwareData);
+                } catch (error) {
+                    console.error('加载失败:', error);
+                    document.getElementById('hardware-data').textContent = '加载失败: ' + error.message;
+                }
+            } else {
+                document.getElementById('hardware-data').textContent = '暂无数据';
+                testCustomHardwareData = [];
+            }
+        }
+
+        // 测试添加自定义配件
+        function testAddCustomHardware() {
+            const testItem = {
+                id: `custom-${Date.now()}`,
+                name: '测试配件 ' + new Date().toLocaleTimeString(),
+                price: Math.floor(Math.random() * 1000) + 100,
+                quantity: 1,
+                specs: '测试规格 - 自动生成',
+                brand: '自定义',
+                category: 'other',
+                isCustom: true
+            };
+
+            testCustomHardwareData.push(testItem);
+            localStorage.setItem('customHardwareData', JSON.stringify(testCustomHardwareData));
+            loadCustomHardwareData();
+            alert('测试配件已添加！');
+        }
+
+        // 清空自定义配件数据
+        function clearCustomHardware() {
+            if (confirm('确定要清空所有自定义配件数据吗？')) {
+                localStorage.removeItem('customHardwareData');
+                testCustomHardwareData = [];
+                loadCustomHardwareData();
+                alert('数据已清空！');
+            }
+        }
+
+        // 表单提交处理
+        document.getElementById('test-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('test-name').value.trim();
+            const price = parseFloat(document.getElementById('test-price').value);
+            const specs = document.getElementById('test-specs').value.trim();
+
+            if (name && price > 0) {
+                const newItem = {
+                    id: `custom-${Date.now()}`,
+                    name: name,
+                    price: price,
+                    quantity: 1,
+                    specs: specs || '自定义硬件',
+                    brand: '自定义',
+                    category: 'other',
+                    isCustom: true
+                };
+
+                testCustomHardwareData.push(newItem);
+                localStorage.setItem('customHardwareData', JSON.stringify(testCustomHardwareData));
+                loadCustomHardwareData();
+                alert('配件已添加！');
+            }
+        });
+
+        // 页面加载时自动加载数据
+        document.addEventListener('DOMContentLoaded', loadCustomHardwareData);
+    </script>
+</body>
+</html>
